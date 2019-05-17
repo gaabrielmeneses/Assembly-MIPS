@@ -1,0 +1,119 @@
+data
+progName: .asciiz "Formula de bhaskara\n"
+digiteOsDados: .asciiz "Digite A,B e C da esquação para resolução de suas raizes\n"
+deltaNum: .asciiz "O Delta é:\n"
+msgError1: .asciiz "\n O Delta não possui raiz perfeita"
+printR1: .asciiz "\nR1 = "
+printR2: .asciiz "\nR2 = "
+pulo: .asciiz "\n"
+.align 2
+
+
+.text
+	
+	li $v0, 4 
+	la $a0, progName
+	syscall
+	
+	li $v0, 4
+	la $a0, digiteOsDados
+	syscall 
+	
+	
+	li $v0, 5 #leitura do A 
+	syscall
+	move $s0, $v0
+	
+	li $v0, 5 #leitura do B
+	syscall
+	move $s1, $v0
+	
+	li $v0, 5 #leitura do C
+	syscall
+	move $s2, $v0
+	
+	#Resolvendo o delta = b² - 4ac
+	delta:
+		mul $t0, $s1, $s1 # resolvendo o b² ou seja b * b e guardando em $t3
+		li $t1, 4 # adicionando o 4 da formula para resolver 4*a*c
+		mul $t2, $s0, $t1 # multiplicando (4 * a) e guardando em $t2
+		mul $t2, $s2, $t2 # multiplicando o resultado de (4*a($t2)*c) e guardando em $t2
+		sub $s3, $t0, $t2 # subtraindo b² - 4ac e guardando o delta em $s3
+	
+		li $v0, 4
+		la $a0, deltaNum #imprimindo o delta
+		syscall
+		li $v0, 1
+		la $a0, 0($s3) #imprimindo valor de delta
+		syscall
+		blt $s3, $zero, msgError #se a raiz for menor que 0 pula pro final do código
+	
+	# Para resolver a raiz de delta, usaremos a seguinte lógica
+	# 1º Passo  25 − 1  = 24
+	# 2º Passo  24 − 3 = 21
+	# 3º Passo  21 − 5 = 16
+	# 4º Passo  16 − 7 = 9
+	# 5º Passo  9  − 9 = 0
+	# contador = 5 e (raiz de 25) == 5, ou seja o contador indica a raiz, se for uma raiz perfeita
+	# posição então será (contador * 2) + 1
+	#   ex: primeiro passo => (0 * 2)+ 1 => 1
+	#	segundo passo => (1 * 2) + 1 => 3
+	
+	li $s4, 0 # contador guardado em $s4
+	li $t3, 1 # const
+	li $t4, 2 # const
+	
+	raizDeDelta:
+		mul $t5, $t4, $s4 # executando (contador * 2) e salvando em $t5
+		add $t6, $t3, $t5 # executanto resultado de [(contador * 2) + 1] salvando posicção em $t6
+		sub $s3, $s3, $t6 # executando raizDeDelta - posição
+		add $s4, $t3, $s4 #incrementa o contador + 1 e salva no $s4(onde estava armazenado)
+		beq $s3, $zero, r1 # quando $t3 == 0, ocorre um branch para  o próximo passo da resolução da formula
+		# o resultado da raiz de delta será o que está salvo em $s3(o contador)
+		j raizDeDelta		
+	
+	#Resolvendo (-b + raiz de delta)/2 * a
+	r1:
+		li $t0, -1 # guarda o -1 para ser multiplicado ao delta da formula R2 e ao b para ficar -b
+		li $t4, 2 # guardando o 2 da formula
+		mul $s1, $t0, $s1 # multiplica (-1) * b para torna-lo -b
+		mul $s5, $s0, $t4 # resolvendo 2*a
+		add $s6, $s1, $s4 # -b + raizDeDelta
+		div $s6, $s6, $s5 # (-b + raizDeDelta) / 2*a
+		li $v0, 4
+		la $a0, printR1 # imprime a msg "R1 ="
+		syscall
+		li $v0, 1
+		la $a0, 0($s6) # imprime o valor de R1
+		syscall
+		li, $v0, 4
+		la $a0, pulo # pula uma linha
+		syscall
+	#Resolvendo (-b - raiz de delta)/2 * a
+	r2:
+		li $t0, -1 # guarda o -1 para ser multiplicado ao delta da formula R2 e ao b para ficar -b
+		li $t4, 2 # guardando o 2 da formula
+		mul $s4, $t0, $s4 # multiplica -1 pelo delta para torna-lo (-delta)
+		mul $s5, $s0, $t4 # resolvendo 2*a
+		add $s7, $s1, $s4 # - b - raizDeDelta
+		div $s7, $s7, $s5 # (-raizDeDelta - b) / 2*a
+		li $v0, 4
+		la $a0, printR2 # imprime a msg "R2 ="
+		syscall
+		li $v0, 1
+		la $a0, 0($s7) # imprime o valor de R2
+		syscall
+		li, $v0, 4
+		la $a0, pulo # pula uma linha
+		syscall
+		j fim
+		
+	msgError:
+		li $v0, 4
+		la $a0, msgError1 # imprime a msg de Erro
+		syscall
+		j fim
+	fim:
+		li $v0, 10 #termina o programa
+		syscall
+	
