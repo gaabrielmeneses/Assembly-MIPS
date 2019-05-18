@@ -1,0 +1,45 @@
+.data
+
+progName: .asciiz "Calculando a area de um circulo\n"
+pi: .float 3.14159
+zeroF: .float 0.0
+area: .asciiz "A area do circulo eh: "
+pulo: .asciiz "\n"
+.align 2
+
+.text
+	main:
+		
+    #armazenando zeroF em $f1
+		lwc1 $f1, zeroF
+		
+		li $v0, 4
+		la $a0, progName #imprime nome do programa
+		syscall
+		
+		li $v0, 6
+		syscall		# lendo o raio e guardando em $f0 internamente
+		
+		# fazendo a potencialização de raio²
+		add.s $f2, $f0, $f1 #guardando em $f2 o valor do inserido pelo usuario 
+		mul.s $f3, $f2, $f2 # raio * raio guardado em $s1
+		lwc1 $f4, pi #armazena o valor de pi em $f4
+		# formula da area de um circulo = pi * raio²
+		mul.s $f5, $f4, $f3 # executa pi * raio² guardando o resultado em $f5
+		
+		li $v0, 4
+		la $a0, area
+		syscall
+		
+		li $v0, 2
+		add.s $f12, $f1, $f5 #imprimindo a area 
+		syscall
+		
+	fim:
+	li $v0, 10
+	syscall
+		
+		
+		
+		
+		
