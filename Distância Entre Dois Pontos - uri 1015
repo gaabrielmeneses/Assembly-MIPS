@@ -1,0 +1,53 @@
+.data
+
+nomeProg: .asciiz "Distancia entre dois pontos\n"
+insira: .asciiz "Insira x1, y1, x2 e y2 respectivamente: \n"
+resultado: .asciiz "A distancia é: "
+zeroFloat: .float 0.0
+
+.align 2
+
+.text
+	
+  main:	
+		li $v0, 4
+		la $a0, nomeProg
+		syscall
+			
+		lwc1 $f7, zeroFloat   #colocando o valor de 0.0 em $f7
+		
+		
+		li $v0, 4
+		la $a0, insira 
+		syscall
+		
+		li $v0, 6
+		syscall             #lendo x1
+		add.s $f1, $f0, $f7 # operando 0.0 + valor lido($f0) para salvar valor lido em $f1
+		
+		li $v0, 6
+		syscall             #lendo y1
+		add.s $f2, $f0, $f7 # operando 0.0 + valor lido($f0) para salvar valor lido em $f2
+		
+		li $v0, 6
+		syscall            #lendo x2
+		add.s $f3, $f0, $f7 # operando 0.0 + valor lido($f0) para salvar valor lido em $f3
+		
+		li $v0, 6
+		syscall            #lendo y2
+		add.s $f4, $f0, $f7 # operando 0.0 + valor lido($f0) para salvar valor lido em $f4
+		
+		sub.s $f5, $f3, $f1 # executando x2 - x1 e salvando em $f5
+		sub.s $f6, $f4, $f2 # executando y2 - y1 e salvando $f6
+		mul.s $f5, $f5, $f5 # executando (x2-x1)² ou seja ($f5)²
+		mul.s $f6, $f6, $f6 # executando (y2-y1)² ou seja ($f6)²
+		add.s $f5, $f6, $f5 # executando ($f5)² + ($f6)² e salvando em $f5
+		sqrt.s $f5, $f5 #executando raiz de $f5
+		
+		li $v0, 4
+		la $a0, resultado
+		syscall 
+		
+		li $v0, 2
+		add.s $f12, $f7, $f5 #imprimindo valor de $f5 ou seja a distancia entre dois pontos
+		syscall
