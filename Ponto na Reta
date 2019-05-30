@@ -1,0 +1,39 @@
+
+
+
+
+.data
+sim: .asciiz "Sim\n"
+nao: .asciiz "Nao\n"
+
+
+.text
+	main:
+		li $v0, 5
+		syscall           # lendo do valor de x
+		move $s0, $v0
+		
+		li $v0, 5	 #ler int
+		syscall 	 # lendo do valor de y
+		move $s1, $v0
+		
+		li $t0, 2
+		mul $s2, $s0, $t0 # multiplicando 2*x
+		add $s2, $s2, $s1 # fórmula da reta 2*x + y 
+
+		bne $s2, 3, salto
+		
+		li $v0, 4  # imprime strings
+		la $a0, sim
+		syscall
+		j fim
+		
+	salto:
+		li $v0, 4
+		la $a0, nao
+		syscall
+		j fim
+	fim:
+	 	li $v0, 10
+	 	syscall
+		
