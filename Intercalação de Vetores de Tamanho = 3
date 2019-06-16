@@ -1,0 +1,152 @@
+.data
+	v1: .word 0, 0, 0
+	v2: .word 0, 0, 0
+	v3: .word 0, 0, 0, 0, 0, 0
+	espaco: .asciiz " "
+	pulaLinha: .asciiz "\n"
+
+.text
+	main:
+		la $s1, v1 				# passando endereço de v1 para $s1
+		la $s2,	v2				# passando endereço de v2 para $s2
+		la $s3, v3				# passando endereço de v3 para $s3
+		
+		li $t0, 0       			# alocando o contador em $t0
+		li $t1, 3 				# alocando o tamanho = 3  em  $t1
+		
+		.macro leia()
+			li $v0, 5
+			syscall				# lendo inteiro
+			move $t2, $v0  			# aloca o valor lido em $v0 para $t2
+		.end_macro
+		
+		.macro pulaLinha()
+			li $v0, 4
+			la $a0, pulaLinha		# pulando uma linha na impressão
+			syscall
+		.end_macro
+		
+		.macro espaco()
+			li $v0, 4
+			la $a0, espaco			# acrescenta um espaço na impressão
+			syscall	
+		.end_macro
+		
+		.macro imprime1(%num)
+			lw $a0, v1(%num)		# imprime os inteiros de v1
+			li $v0, 1
+			syscall
+		.end_macro
+		
+		.macro imprime2(%num)
+			lw $a0, v2(%num)		# imprime os inteiros de v2
+			li $v0, 1
+			syscall
+		.end_macro
+		
+		.macro imprime3(%num)
+			lw $a0, v3(%num)		# imprime os inteiros de v3
+			li $v0, 1
+			syscall
+		.end_macro
+		
+		lendov1:
+			bge $t0, $t1, zeraCont1  	# enquanto contador($t0) < t tamanho($t1) a leitura acontece
+			
+			leia()
+			
+			sw $t2, ($s1)			# passa o valor que está em $t2 para o $s1 que aponta para inicio do vetor
+			
+			addi $s1, $s1, 4		# desloca 4 bytes pra frente
+			addi $t0, $t0, 1		# incrementa contador
+			j lendov1
+		zeraCont1:
+			li $t0, 0			# zera contador para a próxima leitura
+			j lendov2
+		
+		lendov2:
+			bge $t0, $t1, zeraContPrintv1  # enquanto $t0 < $t1 a leitura acontece
+			
+			leia()
+			
+			sw $t2, ($s2)			# passa o valor que está em $t2 para o $s2 que aponta para inicio do vetor
+			
+			addi $s2, $s2, 4		# desloca 4 bytes pra frente de v2
+			addi $t0, $t0, 1		# incrementa contador
+			j lendov2
+		
+		zeraContPrintv1:
+			pulaLinha()
+			li $t0, 0			# zera contador para impressão
+			li $s1, 0			# volta para inicio de v1($s1)
+			j imprimev1		
+		
+		
+		imprimev1:
+			bge $t0, $t1, zeraContPrintv2	# enquanto contador($t0) < tamanho($t1) a impressão acontece
+			
+			imprime1($s1)
+			espaco()
+			
+			addi $s1, $s1, 4		# desloca 4 bytes pra frente
+			addi $t0, $t0, 1		# incrementa contador
+			j imprimev1
+		
+		zeraContPrintv2:
+			pulaLinha()
+			li $t0, 0			# zerando contador
+			li $s2, 0			# voltando para inicio do v2($s2)
+			j imprimev2	
+		
+		imprimev2:
+			bge $t0, $t1, zeraCont3 	# enquanto contador($t0) < tamanho($t1) a impressão acontece
+			
+			imprime2($s2)
+			espaco()
+			
+			addi $s2, $s2, 4		# desloca 4 bytes pra frente
+			addi $t0, $t0, 1		# incrementa contador
+			j imprimev2
+		zeraCont3:
+			pulaLinha()
+			li $t0, 0			# zerando contador
+			li $s1, 0			# voltando para inicio do v1
+			li $s2, 0			# voltando para inicio do v2
+			li $t3, 0			# criando em $t3 uma variavel para passagem dos valores de v1 e v2 para v3
+			j interloc
+		interloc:
+			bge $t0, $t1, zeraContPrintv3 	# enquanto contador($t0) < tamanho($t1) existe o loop
+			
+			lw  $t3, v1($s1) 		# copia valor de $s1 para $t4
+			sw $t3, ($s3)			# salvando em $s3 o valor de v1[contador ($t0)]
+			addi $s3, $s3, 4		# pulando 4 bytes para armazenar proximo valor em v3($s3)
+			lw $t3, v2($s2)			# copia valor de $s2 para $t4
+			sw $t3, ($s3)			# salvando em $s3 o valor de v2[contador($t0)]
+			addi $s3, $s3, 4		# pulando 4 bytes para armazenar proximo valor em v3($s3)
+		
+			addi $s1, $s1, 4		# pulando 4 bytes para o próximo valor
+			addi $s2, $s2, 4		# pulando 4 bytes para o próximo valor
+			addi $t0, $t0, 1		# incrementa contador
+			j interloc
+		
+		zeraContPrintv3:
+			pulaLinha()
+			li $t0, 0			# zerando contador
+			li $s3, 0			# voltando para inicio de v3($s3)
+			li $t4, 6			# alocando o tamanho de v3 em $t3
+			j imprimev3
+		
+		imprimev3:
+			bge $t0, $t4, fim		# enquanto contador($t0) < tamanho($t3) a impressão acontece
+			
+			imprime3($s3)
+			espaco()
+			
+			addi $s3, $s3, 4		# desloca 4 bytes pra frente
+			addi $t0, $t0, 1		# incrementa contador
+			j imprimev3
+		
+		fim:
+			pulaLinha()
+			li $v0, 10			# finalizando o programa
+			syscall
